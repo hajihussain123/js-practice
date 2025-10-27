@@ -1,3 +1,11 @@
+function encodeLists(data) {
+  encodedData = '';
+  for (let index = 0; index < data.length; index++) {
+    encodedData += encode(data[index]);
+  }
+  return encodedData;
+}
+
 function encode(data) {
   if (typeof data === 'number') {
     return 'i' + data + 'e';
@@ -5,6 +13,7 @@ function encode(data) {
   if (typeof data === 'string') {
     return data.length + ':' + data;
   }
+  return 'l' + encodeLists(data) + 'e';
 }
 
 function testEncode(type, data, expected) {
@@ -35,9 +44,14 @@ function testEncodeString() {
   testEncode("string of special chars", "spec!@l ch@rs", "13:spec!@l ch@rs");
 }
 
+function testEncodeLists() {
+  testEncode("test with normal list", ["apple", 123], "l5:applei123ee");
+}
+
 function main() {
   testEncodeInteger();
   testEncodeString();
+  testEncodeLists();
 }
 
 main();
