@@ -1,6 +1,10 @@
 function encode(data) {
-  if (typeof data === 'number')
-  return 'i' + data + 'e';
+  if (typeof data === 'number') {
+    return 'i' + data + 'e';
+  }
+  if (typeof data === 'string') {
+    return data.length + ':' + data;
+  }
 }
 
 function testEncode(type, data, expected) {
@@ -19,10 +23,19 @@ function composeMessage(type, data, expected, result) {
   console.log("✅", type);
 }
 
-function main() {
+function testEncodeInteger() {
   testEncode("test with integers type", 123, "i123e");
   testEncode("test with negative value", -45, "i-45e");
   testEncode("test with zero", 0, "i0e");
+}
+
+function testEncodeString() {
+  testEncode("test with normal string", "hello", "5:hello");
+}
+
+function main() {
+  testEncodeInteger();
+  testEncodeString();
 }
 
 main();
