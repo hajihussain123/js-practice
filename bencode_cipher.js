@@ -31,6 +31,8 @@ function testEncodeInteger() {
 
 function testEncodeString() {
   testEncode("test with normal string", "hello", "5:hello");
+  testEncode("test with empty string", "", "0:");
+  testEncode("string of special chars", "spec!@l ch@rs", "13:spec!@l ch@rs");
 }
 
 function main() {
