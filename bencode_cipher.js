@@ -86,6 +86,8 @@ function testDecodeInteger() {
 
 function testDecodeString() {
   testDecode("test with normal string", "5:hello", "hello");
+  testDecode("test with empty string", "0:", "");
+  testDecode("string of special chars", "13:spec!@l ch@rs", "spec!@l ch@rs");
 }
 
 function main() {
