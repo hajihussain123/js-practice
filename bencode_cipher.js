@@ -1,5 +1,6 @@
 function encode(data) {
-  return "i123e";
+  if (typeof data === 'number')
+  return 'i' + data + 'e';
 }
 
 function testEncode(type, data, expected) {
@@ -20,6 +21,8 @@ function composeMessage(type, data, expected, result) {
 
 function main() {
   testEncode("test with integers type", 123, "i123e");
+  testEncode("test with negative value", -45, "i-45e");
+  testEncode("test with zero", 0, "i0e");
 }
 
 main();
