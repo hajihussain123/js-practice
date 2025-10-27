@@ -21,13 +21,21 @@ function testEncode(type, data, expected) {
   composeMessage(type, data, expected, result);
 }
 
-function isNumber(string) {
-  return string.startsWith('i') && string.endsWith('e');
+function isNumber(cipher) {
+  return cipher.startsWith('i') && cipher.endsWith('e');
+}
+
+function isString(cipherElements) {
+  return +cipherElements[0] === cipherElements[1].length;
 }
 
 function decode(bencodeCipher) {
   if (isNumber(bencodeCipher)) {
     return +bencodeCipher.slice(1, bencodeCipher.length - 1);
+  }
+  const cipherElements = bencodeCipher.split(":");
+  if (isString(cipherElements)) {
+    return cipherElements[1];
   }
 }
 
@@ -72,6 +80,12 @@ function testEncodeLists() {
 
 function testDecodeInteger() {
   testDecode("test with normal integer", "i123e", 123);
+  testDecode("test with negative value", "i-45e", -45);
+  testDecode("test with zero", "i0e", 0);
+}
+
+function testDecodeString() {
+  testDecode("test with normal string", "5:hello", "hello");
 }
 
 function main() {
@@ -81,6 +95,7 @@ function main() {
   testEncodeLists();
   console.log("\n testing all decodings\n", "_".repeat(21));
   testDecodeInteger();
+  testDecodeString();
 }
 
 main();
