@@ -1,5 +1,31 @@
+function areObjects(element1, element2) {
+  return typeof element1 === "object" && typeof element2 === "object";
+}
+
+function areObjectsEqual(array1, array2) {
+  if (array1.length !== array2.length) {
+    return false;
+  }
+  for (let index = 0; index < array1.length; index++) {
+    if (areObjects(array1[index], array2[index])) {
+      return areObjectsEqual(array1[index], array2[index]);
+    }
+    if (array1[index] !== array2[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function areDeepEqual(array1, array2) {
+  if (!areObjects(array1, array2)) {
+    return array1 === array2;
+  }
+  return areObjectsEqual(array1, array2);
+}
+
 function encodeLists(data) {
-  encodedData = '';
+  let encodedData = '';
   for (let index = 0; index < data.length; index++) {
     encodedData += encode(data[index]);
   }
@@ -21,22 +47,47 @@ function testEncode(type, data, expected) {
   composeMessage(type, data, expected, result);
 }
 
-function isNumber(cipher) {
-  return cipher.startsWith('i') && cipher.endsWith('e');
+function decodeList(cipher) {
+  const realElements = [];
+  let index = 0;
+  while (index < cipher.length && cipher[index] !== 'e') {
+    if (cipher[index] === 'i' && index < cipher.length) {
+      realElements.push(+cipher.slice(index + 1, cipher.indexOf('e')));
+      index += cipher.indexOf('e') + 1;
+    } else if (cipher[index] === 'l' && index < cipher.length) {
+      realElements.push(decodeList(cipher.slice(index + 1)));
+      index += (realElements[realElements.length - 1].pop()) + 1;
+      index += cipher[index] === 'e' ? 1 : 0;
+    } else if (cipher[index] !== 'e' && typeof (+cipher[index]) === 'number' && index < cipher.length) {
+      const indexOfSeparator = cipher.indexOf(':');
+      const length = +cipher.slice(index, indexOfSeparator);
+      realElements.push(cipher.slice(indexOfSeparator + 1, length + 1 + indexOfSeparator));
+      index += length + 1 + indexOfSeparator;
+    }
+  }
+  realElements.push(index);
+  return realElements;
 }
 
-function isString(cipherElements) {
-  return +cipherElements[0] === cipherElements[1].length;
+function decodeBencode(bencodeCipher) {
+  if (bencodeCipher[0] === 'i') {
+    return +bencodeCipher.slice(1, bencodeCipher.length - 1);
+  }
+  if (bencodeCipher[0] === 'l') {
+    return decodeList(bencodeCipher.slice(1, bencodeCipher.length));
+  }
+  if (typeof (+bencodeCipher[0]) === 'number') {
+    const indexOfSeparator = bencodeCipher.indexOf(':');
+    return bencodeCipher.slice(indexOfSeparator + 1);
+  }
 }
 
 function decode(bencodeCipher) {
-  if (isNumber(bencodeCipher)) {
-    return +bencodeCipher.slice(1, bencodeCipher.length - 1);
+  const decodedCode = decodeBencode(bencodeCipher);
+  if (Array.isArray(decodedCode)) {
+    decodedCode.pop();
   }
-  const cipherElements = bencodeCipher.split(":");
-  if (isString(cipherElements)) {
-    return cipherElements[1];
-  }
+  return decodedCode;
 }
 
 function testDecode(type, bencodeCipher, expected) {
@@ -45,7 +96,7 @@ function testDecode(type, bencodeCipher, expected) {
 }
 
 function composeMessage(type, data, expected, result) {
-  if (result !== expected) {
+  if (!areDeepEqual(expected, result)) {
     console.log("❌", type);
     console.log("input    |", data);
     console.log("output   |", result);
@@ -90,6 +141,12 @@ function testDecodeString() {
   testDecode("string of special chars", "13:spec!@l ch@rs", "spec!@l ch@rs");
 }
 
+function testDecodeList() {
+  testDecode("empty list", "le", []);
+  testDecode("inner array", "l3:onel3:twoee", ["one", ["two"]]);
+  testDecode("nested array", "l3:oneli45el5:threeei5eee", ["one", [45, ["three"], 5]]);
+}
+
 function main() {
   console.log("\n testing all encodings\n", "_".repeat(21));
   testEncodeInteger();
@@ -98,6 +155,7 @@ function main() {
   console.log("\n testing all decodings\n", "_".repeat(21));
   testDecodeInteger();
   testDecodeString();
+  testDecodeList();
 }
 
 main();
