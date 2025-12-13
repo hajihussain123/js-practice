@@ -39,18 +39,17 @@ const part1 = (dial, input) => {
   const header = { ...dial };
   const instructions = parseInput(input);
   const headings = rotate(header, instructions);
-  return headings;
+  return headings.filter((value) => value[1] === 0).length;
 };
 
-const part2 = (dial, instructions) => {
+const part2 = (dial, input) => {
   const header = { ...dial };
-  return part1(header, instructions).reduce(
-    (total, [countOfZeroes]) => total + countOfZeroes,
-    0,
-  );
+  const instructions = parseInput(input);
+  const headings = rotate(header, instructions);
+  return headings.reduce((count, value) => value[0] + count, 0);
 };
 
 const dial = { heading: 50 };
 const puzzleInput = Deno.readTextFileSync("./day_1_input.txt");
-console.log(part1(dial, puzzleInput).filter((value) => value[1] === 0).length);
+console.log(part1(dial, puzzleInput));
 console.log(part2(dial, puzzleInput));
